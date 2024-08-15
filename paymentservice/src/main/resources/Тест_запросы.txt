@@ -1,0 +1,52 @@
+GET
+http://localhost:9001/pay/products/1
+{
+    "id": 1,
+    "account": "account1",
+    "balance": 100.00,
+    "productType": "CARD",
+    "userId": {
+        "id": 1,
+        "username": "user1"
+    }
+}
+
+
+http://localhost:9000/products/user?userId=1&account=account1
+
+{
+    "id": 1,
+    "account": "account1",
+    "balance": 100.00,
+    "productType": "CARD",
+    "userId": {
+        "id": 1,
+        "username": "user1"
+    }
+}
+
+POST
+http://localhost:9001/pay/newPayment
+Body
+{
+  "user": {
+    "id": 1
+  },
+  "account": "account1",
+  "amount": 100.00
+}
+
+Платеж успешно проведен
+
+Body
+{
+  "user": {
+    "id": 1
+  },
+  "account": "account1",
+  "amount": 500.00
+}
+
+{
+    "message": "Недостаточно средств на счете для оплаты"
+}
