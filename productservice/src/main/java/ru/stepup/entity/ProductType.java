@@ -1,18 +1,18 @@
 package ru.stepup.entity;
 
 public enum ProductType {
-    CARD(0,"Карта"),
-    ACCOUNT(1,"Счет");
+    CARD("0","Карта"),
+    ACCOUNT("1","Счет");
 
-    private final int code;
+    private final String code;
     private final String description;
 
-    ProductType(int code, String description) {
+    ProductType(String code, String description) {
         this.code = code;
         this.description = description;
     }
 
-    public int getCode() {
+    public String getCode() {
         return code;
     }
 
@@ -20,9 +20,9 @@ public enum ProductType {
         return description;
     }
 
-    public static ProductType getByCode(int code) {
+    public static ProductType getByCode(String code) {
         for (ProductType type : values()) {
-            if (type.getCode() == code) {
+            if (type.getCode().equals(code)) {
                 return type;
             }
         }

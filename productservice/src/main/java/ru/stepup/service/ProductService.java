@@ -1,17 +1,19 @@
 package ru.stepup.service;
 
 import org.springframework.stereotype.Service;
-import ru.stepup.dao.ProductDao;
+import ru.stepup.entity.User;
+import ru.stepup.repository.ProductDao;
 import ru.stepup.entity.Product;
 
 import java.util.List;
 
 @Service
 public class ProductService {
+
     private final ProductDao productDao;
 
-    public ProductService(ProductDao userDao) {
-        this.productDao = userDao;
+    public ProductService(ProductDao productDao) {
+        this.productDao = productDao;
     }
 
     public Product save(Product user) {
@@ -23,12 +25,14 @@ public class ProductService {
     }
 
     public Product findById(Long id) {
-        return productDao.findById(id);
+        return productDao.findById(id).orElse(null);
     }
-    public Product findByUserIdAndAccount(Long userId, String account) {
-        return productDao.findByUserIdAndAccount(userId, account);
+
+    public Product findByUserAndAccount(User user, String account) {
+        return productDao.findByUserAndAccount(user, account);
     }
-    public List<Product> findByUserId(Long userId) {
-        return productDao.findByUserId(userId);
+
+    public List<Product> findByUser(User user) {
+        return productDao.findByUser(user);
     }
 }

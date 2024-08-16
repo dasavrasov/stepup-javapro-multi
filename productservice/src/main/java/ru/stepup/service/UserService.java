@@ -1,7 +1,7 @@
 package ru.stepup.service;
 
 import org.springframework.stereotype.Service;
-import ru.stepup.dao.UserDao;
+import ru.stepup.repository.UserDao;
 import ru.stepup.entity.User;
 
 import java.util.List;
@@ -13,13 +13,12 @@ public class UserService {
     public UserService(UserDao userDao) {
         this.userDao = userDao;
     }
-
     public User save(User user) {
         return userDao.save(user);
     }
 
     public User findById(Long id) {
-        return userDao.findById(id);
+        return userDao.findById(id).orElse(null);
     }
 
     public void deleteById(Long id) {

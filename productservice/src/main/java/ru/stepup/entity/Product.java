@@ -22,11 +22,11 @@ public class Product {
     @Column(name = "balance")
     private BigDecimal balance;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = ProductTypeConverter.class)
     @Column(name = "product_type")
     private ProductType productType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 }
