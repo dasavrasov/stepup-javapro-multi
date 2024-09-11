@@ -10,6 +10,7 @@
     <modules>
         <module>productservice</module>
         <module>paymentservice</module>
+        <module>limitservice</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

@@ -5,12 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.stepup.model.ErrorResponse;
+import ru.stepup.model.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import ru.stepup.model.PaymentRequest;
-import ru.stepup.model.Product;
-import ru.stepup.model.ProductResponse;
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/pay")
@@ -21,6 +20,9 @@ public class PaymentController {
 
     @Value("${product.service.url}")
     private String productServiceUrl;
+
+    @Value("${limit.service.url}")
+    private String limitServiceUrl;
 
     @GetMapping("/products/{id}")
     public ResponseEntity<?> payForProduct(@PathVariable Long id) {
@@ -37,6 +39,18 @@ public class PaymentController {
 
     @PostMapping("/newPayment")
     public ResponseEntity<?> newPayment(@RequestBody PaymentRequest paymentRequest) {
+        Long userId = paymentRequest.getUser().getId();
+        BigDecimal paymentSumma = paymentRequest.getAmount();
+        // Проеряем лимит
+        ResponseEntity<Limit> limitResponse = restTemplate.getForEntity(limitServiceUrl + "/limit/" + userId, Limit.class);
+        if (limitResponse.getStatusCode() != HttpStatus.OK) {
+            throw new RestClientException("Ошибка получения лимита user id " + userId);
+        }
+        BigDecimal limit = limitResponse.getBody().getValue();
+        if (limit.compareTo(paymentSumma) < 0) {
+            throw new RestClientException("Превышен лимит на платежи");
+        }
+
         String url = productServiceUrl + "/user?userId=" + paymentRequest.getUser().getId() + "&account=" + paymentRequest.getAccount();
         ResponseEntity<Product> response = restTemplate.getForEntity(url, Product.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -44,6 +58,15 @@ public class PaymentController {
             if (product.getBalance().compareTo(paymentRequest.getAmount()) < 0) {
                 throw new RestClientException("Недостаточно средств на счете для оплаты");
             } else {
+                // Уменьшаем лимит
+                restTemplate.postForEntity(limitServiceUrl + "/reducelimit?userId=" + userId + "&summa=" + paymentSumma, null, Void.class);
+                // Уменьшаем баланс
+                try {
+                    restTemplate.postForEntity(productServiceUrl + "/reducebalance?userId=" + userId + "&account=" + paymentRequest.getAccount() + "&summa=" + paymentSumma, null, Void.class);
+                } catch (RestClientException e) {
+                    // Восстанавливаем лимит
+                    restTemplate.postForEntity(limitServiceUrl + "/restorelimit/" + userId, null, Void.class);
+                }
                 return ResponseEntity.ok("Платеж успешно проведен");
             }
         } else {

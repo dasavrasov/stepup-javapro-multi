@@ -9,6 +9,7 @@ import ru.stepup.model.ErrorResponse;
 import ru.stepup.service.ProductService;
 import ru.stepup.service.UserService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -41,6 +42,20 @@ public class ProductController {
             Product product = productService.findByUserAndAccount(userService.findById(userId), account);
             return new ResponseEntity<>(product, HttpStatus.OK);
         }
+    }
+
+    @PostMapping("/reducebalance")
+    public ResponseEntity<?> reduceBalance(@RequestParam Long userId, @RequestParam String account, @RequestParam BigDecimal summa) {
+        Product product = productService.findByUserAndAccount(userService.findById(userId), account);
+        if (product == null) {
+            throw new EmptyResultDataAccessException(1);
+        }
+        if (product.getBalance().compareTo(summa) < 0) {
+            throw new IllegalArgumentException("Недостаточно средств на счете для списания");
+        }
+        product.setBalance(product.getBalance().subtract(summa));
+        productService.save(product);
+        return ResponseEntity.ok("Списание прошло успешно");
     }
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
