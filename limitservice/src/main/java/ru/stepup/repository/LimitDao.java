@@ -10,4 +10,6 @@ public interface LimitDao extends JpaRepository<Limit, Long> {
 
     @Override
     <S extends Limit> S save(S entity);
+
+    void deleteByUserId(Long userId);
 }
